@@ -60,9 +60,12 @@ void Draw_Circle(int x, int y, short pixel_color, void *virtual_base)
 	{
 		x1 = r * cos( i * PI/180);
 		y1 = r * sin( i * PI/180);
-		pixel_ptr = HW_OCRAM_BASE + x + x1;
-		PHYSMEM_16(pixel_ptr) = pixel_color;
-		pixel_ptr = HW_OCRAM_BASE + y + y1;
+		// pixel_ptr = HW_OCRAM_BASE + x + x1;
+		// PHYSMEM_16(pixel_ptr) = pixel_color;
+		// pixel_ptr = HW_OCRAM_BASE + y + y1;
+		// PHYSMEM_16(pixel_ptr) = pixel_color;
+		
+		pixel_ptr = HW_OCRAM_BASE + ((int)(x + x1) << 10) + (int)(y + y1);
 		PHYSMEM_16(pixel_ptr) = pixel_color;
 	}	
 	
