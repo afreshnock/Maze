@@ -64,7 +64,7 @@ void VGA_text_clear(void *virtual_base) {
 }
 
 void VGA_clear(void *virtual_base) {
-    VGA_box(0, 0, 572, 480, 0x0000, virtual_base); // Black
+    VGA_box(0, 0, 640, 480, 0x0000, virtual_base); // Black
     VGA_text_clear(virtual_base);
 }
 
@@ -151,9 +151,9 @@ int main(int argc, char *argv[]){
 	//////////////////////////////// VGA CODE ///////////////////////////////////
 	void *virtual_base;
 	int fd;
-	int box_x1 = 260, box_y1 = 220, box_x2 = 310, box_y2 = 270;
+	int box_x1 = 260, box_y1 = 220, box_x2 = 280, box_y2 = 240;
 	int prev_box_x1 = 0, prev_box_y1 = 0, prev_box_x2 = 0, prev_box_y2 = 0;
-	int start_x = 286, start_y = 240;
+	int start_x = 320, start_y = 240;
 	int center_x, center_y;
 	int prev_center_x = start_x, prev_center_y = start_y;
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
 	VGA_clear(virtual_base);
 	VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);	// Initial box position
 
-	// VGA_line(0, 0, 571, 479, 0xFFFF, virtual_base); // White diagonal from top-left to bottom-right
+	VGA_line(639, 0, 639, 479, 0xFFFF, virtual_base); 
     // VGA_line(0, 479, 571, 0, 0xFFFF, virtual_base); // White diagonal from bottom-left to top-right
     // VGA_line(0, 240, 571, 240, 0xFFFF, virtual_base); // White horizontal line in the middle
     // VGA_line(286, 0, 286, 479, 0xFFFF, virtual_base); // White vertical line in the middle
@@ -245,9 +245,9 @@ int main(int argc, char *argv[]){
 				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
                 printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
 
-				int move_amount = 20;
+				int move_amount = 5;	// movement speed
 
-				if (x_g > 100 && box_x2 < 572) {
+				if (x_g > 100 && box_x2 < 640) {
 					box_x1 += move_amount;
 					box_x2 += move_amount;
 				} else if (x_g < -100 && box_x1 > 0) {
@@ -258,7 +258,7 @@ int main(int argc, char *argv[]){
 				if (y_g > 100 && box_y1 > 0) {
 					box_y1 -= move_amount;
 					box_y2 -= move_amount;
-				} else if (y_g < -100 && box_y1 < 480) {
+				} else if (y_g < -100 && box_y2 < 480) {
 					box_y1 += move_amount;
 					box_y2 += move_amount;
 				}
@@ -276,12 +276,12 @@ int main(int argc, char *argv[]){
 				prev_box_y2 = box_y2;
 
 				// Clear the previous line position only
-				VGA_line(start_x, start_y, prev_center_x, prev_center_y, 0x0000, virtual_base);
+				//VGA_line(start_x, start_y, prev_center_x, prev_center_y, 0x0000, virtual_base);
 
 				center_x = (box_x1 + box_x2) / 2;
 				center_y = (box_y1 + box_y2) / 2;
 
-				VGA_line(start_x, start_y, center_x, center_y, 0xFFFF, virtual_base);
+				//VGA_line(start_x, start_y, center_x, center_y, 0xFFFF, virtual_base);
 
 				// Update the previous position for the next line
 				prev_center_x = center_x;
