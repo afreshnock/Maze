@@ -1,0 +1,140 @@
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#define HW_REGS_BASE ( 0xFC000000 )
+#define HW_OCRAM_BASE ( 0xC8000000 )
+#define HW_REGS_SPAN ( 0x04000000 )
+#define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
+#define FPGA_CHAR_BASE      0xC9000000
+
+#define PHYSMEM_32(addr) (*((unsigned int *)(virtual_base + (addr & HW_REGS_MASK))))
+#define PHYSMEM_16(addr) (*((unsigned short *)(virtual_base + (addr & HW_REGS_MASK))))
+
+
+/****************************************************************************************
+ * Draw a filled rectangle on the VGA monitor 
+****************************************************************************************/
+void VGA_box(int x1, int y1, int x2, int y2, short pixel_color, void *virtual_base)
+{ 
+	unsigned int pixel_ptr, row, col;
+
+	/* assume that the box coordinates are valid */
+	for (row = y1; row <= y2; row++)
+		for (col = x1; col <= x2; ++col)
+		{
+			pixel_ptr = HW_OCRAM_BASE + (row << 10) + (col << 1);
+			PHYSMEM_16(pixel_ptr) = pixel_color;		// set pixel color
+		}
+}
+
+
+void VGA_text(int x, int y, char * text_ptr, void *virtual_base)
+{
+	int offset;
+  	unsigned int  char_ptr;
+
+	/* assume that the text string fits on one line */
+	offset = (y << 7) + x;
+	while ( *(text_ptr) )
+	{
+		char_ptr =  FPGA_CHAR_BASE + offset;
+		
+		PHYSMEM_32(char_ptr) = *(text_ptr);
+		
+		++text_ptr;
+		++offset;
+	}
+}
+
+void VGA_text_clear(void *virtual_base)
+{
+	int x,y;
+	int offset;
+	char blank[1] = " ";
+  	unsigned int  char_ptr;
+
+	// Character coordinats are from 0,0 to 79,59 (x,y) position
+	for(x = 0; x < 80; x++)
+		for(y = 0; y < 60; y++)
+		{
+		/* assume that the text string fits on one line */
+		offset = (y << 7) + x;
+		char_ptr =  FPGA_CHAR_BASE + offset;
+		PHYSMEM_32(char_ptr) = *blank;
+		}
+}
+// Test program for use with the DE1-SoC University Computer
+// 
+
+int main(int argc,char ** argv) {
+	
+    void *virtual_base;
+    int fd;
+  	
+   if( ( fd = open( "/dev/mem", ( O_RDWR | O_SYNC ) ) ) == -1 ) {
+	    printf( "ERROR: could not open \"/dev/mem\"...\n" );
+		return( 1 );
+	}
+    
+	virtual_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_REGS_BASE );
+	if( virtual_base == MAP_FAILED ) {
+		printf( "ERROR: mmap() failed...\n" );
+		close( fd );
+		return( 1 );
+	}
+	
+    // Set framebuffer addr to beginning of the SRAM
+    PHYSMEM_32(0xff203024) = 0xc8000000;
+    PHYSMEM_32(0xff203020) = 0xc8000000;
+    
+    // Unmap registers region, map onchip ram region
+    if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+		printf( "ERROR: munmap() failed...\n" );
+		close( fd );
+		return( 1 );
+	}
+    virtual_base = mmap( NULL, HW_REGS_SPAN, ( PROT_READ | PROT_WRITE ), MAP_SHARED, fd, HW_OCRAM_BASE );
+	if( virtual_base == MAP_FAILED ) {
+		printf( "ERROR: mmap() failed...\n" );
+		close( fd );
+		return( 1 );
+	}
+    
+    // Clear the screen
+	VGA_box(0, 0, 320,480,0x0000, virtual_base);
+	
+	char text_top_row[40] = "Altera DE1-SoC\0";
+	char text_bottom_row[40] = "Computer\0";
+
+    VGA_text (34, 29, text_top_row, virtual_base);
+	VGA_text (34, 30, text_bottom_row, virtual_base);
+	
+	VGA_text (1, 1, text_top_row, virtual_base);
+	VGA_text (1, 2, text_bottom_row, virtual_base);
+	VGA_text (65, 58, text_top_row, virtual_base);
+	VGA_text (69, 59, text_bottom_row, virtual_base);
+	
+	VGA_text_clear(virtual_base);
+	
+	if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+		printf( "ERROR: munmap() failed...\n" );
+		close( fd );
+		return( 1 );
+	}
+
+	close( fd );
+
+	return( 0 );
+
+}
