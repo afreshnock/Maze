@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <linux/i2c-dev.h>
@@ -47,6 +48,26 @@ void VGA_text(int x, int y, char * text_ptr, void *virtual_base) {
         ++offset;
     }
 }
+
+void Draw_Circle(int x, int y, short pixel_color, void *virtual_base)
+{
+	unsigned int pixel_ptr;
+	int r = 5;
+	static double PI = 3.14;
+	double x1, y1;
+	double i;
+	for( i =0; i < 360; i ++)
+	{
+		x1 = r * cos( i * PI/180);
+		y1 = r * sin( i * PI/180);
+		pixel_ptr = HW_OCRAM_BASE + x + x1;
+		PHYSMEM_16(pixel_ptr) = pixel_color;
+		pixel_ptr = HW_OCRAM_BASE + y + y1;
+		PHYSMEM_16(pixel_ptr) = pixel_color;
+	}	
+	
+}
+
 
 void VGA_text_clear(void *virtual_base) {
     int x,y;
@@ -187,7 +208,7 @@ int main(int argc, char *argv[]){
     }
 
 	VGA_clear(virtual_base);
-	VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);	// Initial box position
+	//VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);	// Initial box position
 
 	// VGA_line(0, 0, 571, 479, 0xFFFF, virtual_base); // White diagonal from top-left to bottom-right
     // VGA_line(0, 479, 571, 0, 0xFFFF, virtual_base); // White diagonal from bottom-left to top-right
@@ -240,7 +261,7 @@ int main(int argc, char *argv[]){
         if (ADXL345_IsDataReady(file)){
             bSuccess = ADXL345_XYZ_Read(file, szXYZ);
             if (bSuccess){
-				cnt++;
+				/* cnt++;
 				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
 				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
                 printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
@@ -261,13 +282,13 @@ int main(int argc, char *argv[]){
 				} else if (y_g < -100 && box_y1 < 480) {
 					box_y1 += move_amount;
 					box_y2 += move_amount;
-				}
+				} */
 
-				// Clear the previous box position only
-				VGA_box(prev_box_x1, prev_box_y1, prev_box_x2, prev_box_y2, 0x0000, virtual_base);
+				/* // Clear the previous box position only
+				//VGA_box(prev_box_x1, prev_box_y1, prev_box_x2, prev_box_y2, 0x0000, virtual_base);
 
 				// Draw the new box position
-				VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);
+				//VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);
 
 				// Update the previous position for the next iteration
 				prev_box_x1 = box_x1;
@@ -276,16 +297,18 @@ int main(int argc, char *argv[]){
 				prev_box_y2 = box_y2;
 
 				// Clear the previous line position only
-				VGA_line(start_x, start_y, prev_center_x, prev_center_y, 0x0000, virtual_base);
+				//VGA_line(start_x, start_y, prev_center_x, prev_center_y, 0x0000, virtual_base);
 
 				center_x = (box_x1 + box_x2) / 2;
 				center_y = (box_y1 + box_y2) / 2;
 
-				VGA_line(start_x, start_y, center_x, center_y, 0xFFFF, virtual_base);
+				//VGA_line(start_x, start_y, center_x, center_y, 0xFFFF, virtual_base);
 
 				// Update the previous position for the next line
 				prev_center_x = center_x;
-				prev_center_y = center_y;
+				prev_center_y = center_y; */
+				
+				Draw_Circle(50,50, 0xFFFF, virtual_base);
 
                 usleep(50*1000);
             }
