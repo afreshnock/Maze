@@ -51,13 +51,15 @@ void VGA_text(int x, int y, char * text_ptr, void *virtual_base) {
 
 void Draw_Circle(int x, int y, short pixel_color, void *virtual_base)
 {
+	
 	unsigned int pixel_ptr;
-	int r = 5;
+	int r = 15;
 	static double PI = 3.14;
 	double x1, y1;
 	double i;
 	for( i =0; i < 360; i ++)
 	{
+		for( r = 15; r > 0; r--){
 		x1 = r * cos( i * PI/180);
 		y1 = r * sin( i * PI/180);
 		// pixel_ptr = HW_OCRAM_BASE + x + x1;
@@ -67,6 +69,7 @@ void Draw_Circle(int x, int y, short pixel_color, void *virtual_base)
 		
 		pixel_ptr = HW_OCRAM_BASE + ((int)(x + x1) << 10) + (int)(y + y1);
 		PHYSMEM_16(pixel_ptr) = pixel_color;
+		}
 	}	
 	
 }
@@ -175,11 +178,11 @@ int main(int argc, char *argv[]){
 	//////////////////////////////// VGA CODE ///////////////////////////////////
 	void *virtual_base;
 	int fd;
-	int box_x1 = 260, box_y1 = 220, box_x2 = 310, box_y2 = 270;
+	/* int box_x1 = 260, box_y1 = 220, box_x2 = 310, box_y2 = 270;
 	int prev_box_x1 = 0, prev_box_y1 = 0, prev_box_x2 = 0, prev_box_y2 = 0;
 	int start_x = 286, start_y = 240;
 	int center_x, center_y;
-	int prev_center_x = start_x, prev_center_y = start_y;
+	int prev_center_x = start_x, prev_center_y = start_y; */
 
 	if ((fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
         printf("ERROR: could not open \"/dev/mem\"...\n");
@@ -223,7 +226,7 @@ int main(int argc, char *argv[]){
 	const char *filename = "/dev/i2c-0";
 	uint8_t id;
 	bool bSuccess;
-	const int mg_per_digi = 4;
+	//const int mg_per_digi = 4;
 	uint16_t szXYZ[3];
 	int cnt=0, max_cnt=0;
 	
@@ -311,7 +314,7 @@ int main(int argc, char *argv[]){
 				prev_center_x = center_x;
 				prev_center_y = center_y; */
 				
-				Draw_Circle(50,50, 0xFFFF, virtual_base);
+				Draw_Circle(200,200, 0xFFFF, virtual_base);
 
                 usleep(50*1000);
             }
