@@ -15,85 +15,59 @@
 #include "hwlib.h"
 #include "ADXL345.h"
 
-#define HW_REGS_BASE ( 0xFC000000 )
-#define HW_OCRAM_BASE ( 0xC8000000 )
-#define HW_REGS_SPAN ( 0x04000000 )
-#define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
+#define HW_REGS_BASE (0xFC000000)
+#define HW_OCRAM_BASE (0xC8000000)
+#define HW_REGS_SPAN (0x04000000)
+#define HW_REGS_MASK (HW_REGS_SPAN - 1)
 #define FPGA_CHAR_BASE      0xC9000000
 
 #define PHYSMEM_32(addr) (*((unsigned int *)(virtual_base + (addr & HW_REGS_MASK))))
 #define PHYSMEM_16(addr) (*((unsigned short *)(virtual_base + (addr & HW_REGS_MASK))))
 
-void VGA_box(int x1, int y1, int x2, int y2, short pixel_color, void *virtual_base) {
-    unsigned int pixel_ptr, row, col;
-
-    for (row = y1; row <= y2; row++) {
-        for (col = x1; col <= x2; ++col) {
-            pixel_ptr = HW_OCRAM_BASE + (row << 10) + col;
-            PHYSMEM_16(pixel_ptr) = pixel_color; // set pixel color
-        }
-    }
+void VGA_pixel(int x, int y, short pixel_color, void* virtual_base) {
+    unsigned int pixel_ptr = HW_OCRAM_BASE + (y << 10) + x;
+    PHYSMEM_16(pixel_ptr) = pixel_color; // Set pixel color
 }
 
-void VGA_text(int x, int y, char * text_ptr, void *virtual_base) {
-    int offset;
-    unsigned int char_ptr;
-
-    offset = (y << 7) + x;
-    while (*(text_ptr)) {
-        char_ptr = FPGA_CHAR_BASE + offset;
-        PHYSMEM_32(char_ptr) = *(text_ptr);
-        ++text_ptr;
-        ++offset;
-    }
-}
-
-void VGA_text_clear(void *virtual_base) {
+void VGA_clear(void* virtual_base) {
     int x,y;
-    int offset;
-    char blank[1] = " ";
-    unsigned int char_ptr;
-
-    for(x = 0; x < 80; x++) {
-        for(y = 0; y < 60; y++) {
-            offset = (y << 7) + x;
-            char_ptr = FPGA_CHAR_BASE + offset;
-            PHYSMEM_32(char_ptr) = *blank;
+    for (y = 0; y < 480; y++) {
+        for (x = 0; x < 640; x++) {
+            VGA_pixel(x, y, 0x0000, virtual_base); // Black
         }
     }
 }
 
-void VGA_clear(void *virtual_base) {
-    VGA_box(0, 0, 640, 480, 0x0000, virtual_base); // Black
-    VGA_text_clear(virtual_base);
+void VGA_circle(int x0, int y0, int radius, short pixel_color, void* virtual_base) {
+    int x = radius;
+    int y = 0;
+    int radiusError = 1 - x;
+
+    while (x >= y) {
+        VGA_pixel(x + x0, y + y0, pixel_color, virtual_base);
+        VGA_pixel(y + x0, x + y0, pixel_color, virtual_base);
+        VGA_pixel(-x + x0, y + y0, pixel_color, virtual_base);
+        VGA_pixel(-y + x0, x + y0, pixel_color, virtual_base);
+        VGA_pixel(-x + x0, -y + y0, pixel_color, virtual_base);
+        VGA_pixel(-y + x0, -x + y0, pixel_color, virtual_base);
+        VGA_pixel(x + x0, -y + y0, pixel_color, virtual_base);
+        VGA_pixel(y + x0, -x + y0, pixel_color, virtual_base);
+        y++;
+        if (radiusError < 0) {
+            radiusError += 2 * y + 1;
+        }
+        else {
+            x--;
+            radiusError += 2 * (y - x + 1);
+        }
+    }
 }
 
-void VGA_line(int x0, int y0, int x1, int y1, short pixel_color, void *virtual_base) {
-    // Implementing Bresenham's Line Drawing Algorithm
-    int dx = abs(x1 - x0);
-    int dy = abs(y1 - y0);
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
-    int err = dx - dy;
-    int e2;
-
-    while (1) {
-        unsigned int pixel_ptr = HW_OCRAM_BASE + (y0 << 10) + x0;
-        PHYSMEM_16(pixel_ptr) = pixel_color;
-
-        if (x0 == x1 && y0 == y1) {
-            break;
-        }
-
-        e2 = 2 * err;
-        if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
-        }
-        if (e2 < dx) {
-            err += dx;
-            y0 += sy;
-        }
+void VGA_draw_circle(int radius, void* virtual_base){
+    int r = radius;
+    for (r = radius; r > 0; r--)
+    {
+        VGA_circle(320, 240, r, 0xFFFF, virtual_base); // Draw circle at center of screen
     }
 }
 
@@ -145,17 +119,9 @@ bool ADXL345_REG_MULTI_READ(int file, uint8_t readaddr,uint8_t readdata[], uint8
 	return bSuccess;
 }
 
-
-int main(int argc, char *argv[]){
-	
-	//////////////////////////////// VGA CODE ///////////////////////////////////
+int main() {
 	void *virtual_base;
 	int fd;
-	int box_x1 = 260, box_y1 = 220, box_x2 = 280, box_y2 = 240;
-	int prev_box_x1 = 0, prev_box_y1 = 0, prev_box_x2 = 0, prev_box_y2 = 0;
-	int start_x = 320, start_y = 240;
-	int center_x, center_y;
-	int prev_center_x = start_x, prev_center_y = start_y;
 
 	if ((fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
         printf("ERROR: could not open \"/dev/mem\"...\n");
@@ -186,127 +152,16 @@ int main(int argc, char *argv[]){
         return(1);
     }
 
-	VGA_clear(virtual_base);
-	VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);	// Initial box position
+    VGA_clear(virtual_base);
+    VGA_draw_circle(10, virtual_base); // Draw circle at center of screen
 
-	VGA_line(639, 0, 639, 479, 0xFFFF, virtual_base); 
-    // VGA_line(0, 479, 571, 0, 0xFFFF, virtual_base); // White diagonal from bottom-left to top-right
-    // VGA_line(0, 240, 571, 240, 0xFFFF, virtual_base); // White horizontal line in the middle
-    // VGA_line(286, 0, 286, 479, 0xFFFF, virtual_base); // White vertical line in the middle
 
-	//////////////////////////////// GSENSOR CODE ///////////////////////////////////
-	int file;
-	const char *filename = "/dev/i2c-0";
-	uint8_t id;
-	bool bSuccess;
-	const int mg_per_digi = 4;
-	uint16_t szXYZ[3];
-	int cnt=0, max_cnt=0;
-	
-	printf("===== gsensor test =====\r\n");
-	
-	if (argc == 2){
-		max_cnt = atoi(argv[1]);
-	}
-	
-	// open bus
-	if ((file = open(filename, O_RDWR)) < 0) {
-  	  /* ERROR HANDLING: you can check errno to see what went wrong */
-	    perror("Failed to open the i2c bus of gsensor");
-  	  exit(1);
-	}	
-	
-
-	// init	 
-	// gsensor i2c address: 101_0011
-	int addr = 0b01010011; 
-	if (ioctl(file, I2C_SLAVE, addr) < 0) {
-  	  printf("Failed to acquire bus access and/or talk to slave.\n");
-	    /* ERROR HANDLING; you can check errno to see what went wrong */
-  	  exit(1);
-	}	
-	
-
-    // configure accelerometer as +-2g and start measure
-    bSuccess = ADXL345_Init(file);
-    if (bSuccess){
-        // dump chip id
-        bSuccess = ADXL345_IdRead(file, &id);
-        if (bSuccess)
-            printf("id=%02Xh\r\n", id);
-    }        
-    
-    while(bSuccess && (max_cnt == 0 || cnt < max_cnt)){
-        if (ADXL345_IsDataReady(file)){
-            bSuccess = ADXL345_XYZ_Read(file, szXYZ);
-            if (bSuccess){
-				cnt++;
-				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
-				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
-                printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
-
-				int move_amount = 5;	// movement speed
-
-				if (x_g > 100 && box_x2 < 640) {
-					box_x1 += move_amount;
-					box_x2 += move_amount;
-				} else if (x_g < -100 && box_x1 > 0) {
-					box_x1 -= move_amount;
-					box_x2 -= move_amount;
-				}
-
-				if (y_g > 100 && box_y1 > 0) {
-					box_y1 -= move_amount;
-					box_y2 -= move_amount;
-				} else if (y_g < -100 && box_y2 < 480) {
-					box_y1 += move_amount;
-					box_y2 += move_amount;
-				}
-
-				// Clear the previous box position only
-				VGA_box(prev_box_x1, prev_box_y1, prev_box_x2, prev_box_y2, 0x0000, virtual_base);
-
-				// Draw the new box position
-				VGA_box(box_x1, box_y1, box_x2, box_y2, 0xFFFF, virtual_base);
-
-				// Update the previous position for the next iteration
-				prev_box_x1 = box_x1;
-				prev_box_y1 = box_y1;
-				prev_box_x2 = box_x2;
-				prev_box_y2 = box_y2;
-
-				// Clear the previous line position only
-				//VGA_line(start_x, start_y, prev_center_x, prev_center_y, 0x0000, virtual_base);
-
-				center_x = (box_x1 + box_x2) / 2;
-				center_y = (box_y1 + box_y2) / 2;
-
-				//VGA_line(start_x, start_y, center_x, center_y, 0xFFFF, virtual_base);
-
-				// Update the previous position for the next line
-				prev_center_x = center_x;
-				prev_center_y = center_y;
-
-                usleep(50*1000);
-            }
-        }
-    }
-    
-    if (!bSuccess)
-        printf("Failed to access accelerometer\r\n");
-	
-	if (file)
-		close(file);
-			
-	printf("gsensor, bye!\r\n");
-
-	if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
+    if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
         printf("ERROR: munmap() failed...\n");
         close(fd);
         return(1);
-    }			
+    }
 
-	close(fd);
-	return 0;
-	
+    close(fd);
+    return 0;
 }
