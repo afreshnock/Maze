@@ -17,6 +17,8 @@
 
 #define HW_REGS_BASE (0xFC000000)
 #define HW_OCRAM_BASE (0xC8000000)
+#define BACK_BUFFER (0xC00F0000)
+#define FRONT_BUFFER (0xC000FFFF)
 #define HW_REGS_SPAN (0x04000000)
 #define HW_REGS_MASK (HW_REGS_SPAN - 1)
 #define FPGA_CHAR_BASE      0xC9000000
@@ -25,7 +27,7 @@
 #define PHYSMEM_16(addr) (*((unsigned short *)(virtual_base + (addr & HW_REGS_MASK))))
 
 void VGA_pixel(int x, int y, short pixel_color, void* virtual_base) {
-    unsigned int pixel_ptr = HW_OCRAM_BASE + (y << 10) + x;
+    unsigned int pixel_ptr = BACK_BUFFER + (y << 10) + x;
     PHYSMEM_16(pixel_ptr) = pixel_color; // Set pixel color
 }
 
@@ -64,19 +66,38 @@ void VGA_circle(int x0, int y0, int radius, short pixel_color, void* virtual_bas
 }
 
 void VGA_draw_circle(int radius,int x, int y, void* virtual_base){
-    int r = radius;
-    for (r = radius; r > 0; r--)
-    {
-        VGA_circle(x, y, r, 0xFFFF, virtual_base); // Draw circle at center of screen
-    }
+     int r = 2*radius;
+    // for (r = radius; r > 0; r--)
+    // {
+        // VGA_circle(x, y, r, 0xFFFF, virtual_base); // Draw circle at center of screen
+    // }
+	int i,j;
+	
+	for(i=0;i<r;i++)
+	{	
+		for(j=0;j<r;j++){
+			if((i-radius)*(i-radius) + (j-radius)*(j-radius) <= radius*radius){
+				VGA_pixel(x-radius+i, y-radius+j, 0xFFFF, virtual_base);
+			}
+		}
+	}
 }
 
 void VGA_clear_circle(int radius,int x, int y, void* virtual_base){
-	int r = radius;
-    for (r = radius; r > 0; r--)
-    {
-        VGA_circle(x, y, r, 0x0000, virtual_base); // Clear circle
-    }
+	 int r = 2*radius;
+    // for (r = radius; r > 0; r--)
+    // {
+        // VGA_circle(x, y, r, 0x0000, virtual_base); // Clear circle
+    // }
+	int i,j;
+	for(i=0;i<r;i++)
+	{	
+		for(j=0;j<r;j++){
+			if((i-radius)*(i-radius) + (j-radius)*(j-radius) <= radius*radius){
+				VGA_pixel(x-radius+i, y-radius+j, 0x0000, virtual_base);
+			}
+		}
+	}
 }
 
 bool ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value){
@@ -143,9 +164,9 @@ int main() {
         return(1);
     }
 
-	// Set framebuffer addr to beginning of the SRAM
-    PHYSMEM_32(0xff203024) = 0xc8000000; // Pixel BackBuffer register
-    PHYSMEM_32(0xff203020) = 0xc8000000; // Pixel Buffer register
+	// Set framebuffer addr to beginning of the on SDRAM
+    PHYSMEM_32(0xff203024) = 0xc00F0000; // Pixel BackBuffer register
+    PHYSMEM_32(0xff203020) = 0xc000FFFF; // Pixel Buffer register
 
 	if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
         printf("ERROR: munmap() failed...\n");
@@ -237,18 +258,41 @@ int main() {
 				}
 
 				// Clear the previous circle position only
-				VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
-
-				// Draw the new box position
-				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
-
+				if(prev_circle_x != circle_x || prev_circle_y != circle_y){
+					VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
+					
+					// VGA_circle(prev_circle_x, prev_circle_y, r, 0x0000, virtual_base);
+					
+					// VGA_circle(circle_x, circle_y, r, 0xFFFF, virtual_base);
+					// Draw the new box position
+					VGA_draw_circle(r,circle_x,circle_y,virtual_base);
+				
+				}
+				
+				
+				int swapped =0;
+				
+				while(swapped == 0){
+					int status = PHYSMEM_32(0xFF20302C);
+					status = status & 0x00000001; // mask off the upper bits
+					
+					if(status == 0){
+					//PHYSMEM_16(FRONT_BUFFER) = 0x1; // writing one to pixel buffer to enable back buffer swap
+					swapped = 1;
+					}else
+					{
+						usleep(10 *1000);
+					}	
+				}
+				
+				
 				// Update the previous position for the next iteration
 				prev_circle_x = circle_x;
 				prev_circle_y = circle_y;
 
 				
 
-                usleep(50*1000);
+                
             }
         }
     }
