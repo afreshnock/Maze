@@ -63,11 +63,27 @@ void VGA_circle(int x0, int y0, int radius, short pixel_color, void* virtual_bas
     }
 }
 
+<<<<<<< Updated upstream
 void VGA_draw_circle(int radius, void* virtual_base){
     int r = radius;
     for (r = radius; r > 0; r--)
     {
         VGA_circle(320, 240, r, 0xFFFF, virtual_base); // Draw circle at center of screen
+=======
+void VGA_draw_circle(int radius,int x, int y, void* virtual_base){
+    int r = radius;
+    for (r = radius; r > 0; r--)
+    {
+        VGA_circle(x, y, r, 0xFFFF, virtual_base); // Draw circle at center of screen
+    }
+}
+
+void VGA_clear_circle(int radius,int x, int y, void* virtual_base){
+	int r = radius;
+    for (r = radius; r > 0; r--)
+    {
+        VGA_circle(x, y, r, 0x0000, virtual_base); // Clear circle
+>>>>>>> Stashed changes
     }
 }
 
@@ -153,7 +169,62 @@ int main() {
     }
 
     VGA_clear(virtual_base);
+<<<<<<< Updated upstream
     VGA_draw_circle(10, virtual_base); // Draw circle at center of screen
+=======
+    
+
+	//initial circle coordinates
+	int circle_x = 100;
+	int circle_y = 100;
+	int prev_circle_x, prev_circle_y;
+	VGA_draw_circle(10,circle_x,circle_y, virtual_base); // Draw circle at center of screen
+    
+    while(bSuccess && (max_cnt == 0 || cnt < max_cnt)){
+        if (ADXL345_IsDataReady(file)){
+            bSuccess = ADXL345_XYZ_Read(file, szXYZ);
+            if (bSuccess){
+				cnt++;
+				int r = 10; // radius of the circle
+				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
+				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
+                printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
+
+				int move_amount = 5;	// movement speed
+
+				if (x_g > 100 && circle_x < 635 - r) {
+					circle_x += move_amount;
+					// Clear the previous circle position only
+					VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
+				} else if (x_g < -100 && circle_x > 0 + r) {
+					circle_x -= move_amount;
+					// Clear the previous circle position only
+					VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
+				}
+
+				if (y_g > 100 && circle_y > 0 + r) {
+					circle_y -= move_amount;
+					// Clear the previous circle position only
+					VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
+				} else if (y_g < -100 && circle_y < 475 - r) {
+					circle_y += move_amount;
+					// Clear the previous circle position only
+					VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
+				}
+
+				// Draw the new box position
+				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
+
+				// Update the previous position for the next iteration
+				prev_circle_x = circle_x;
+				prev_circle_y = circle_y;
+
+                usleep(50*1000);
+            }
+        }
+    }
+
+>>>>>>> Stashed changes
 
 
     if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
