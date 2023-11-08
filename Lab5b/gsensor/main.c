@@ -202,18 +202,19 @@ int main() {
             printf("id=%02Xh\r\n", id);
     }
 	
-	printf("Program running");
+	
     VGA_clear(virtual_base);
     
 
 	//initial circle coordinates
 	int circle_x = 100;
 	int circle_y = 100;
+	int momentum_x = 0;
 	int prev_circle_x, prev_circle_y;
 	VGA_draw_circle(10,circle_x,circle_y, virtual_base); // Draw circle at center of screen
-	float t = .25;
-	int v_x = 0;
-	int v_y = 0;
+	//float t = .25;
+	//int v_x = 0;
+	//int v_y = 0;
     
     while(bSuccess && (max_cnt == 0 || cnt < max_cnt)){
         if (ADXL345_IsDataReady(file)){
@@ -223,41 +224,129 @@ int main() {
 				int r = 10; // radius of the circle
 				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
 				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
-                printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
+                //printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
 
 				
 				
-				
+				//printf(" circle x: %d \r\n", circle_x);
+
 				
 				//int move_amount = 5;	// movement speed
 
-				if (x_g > 100 && circle_x < 635 - r) {
-					v_x += t*(x_g/100);
-					circle_x += v_x * t;
-				} else if (x_g < -100 && circle_x > 0 + r) {
-					v_x -= t*(x_g/100);
-					circle_x -= v_x * t;
+				if (x_g > 125 && circle_x < 635 - r) {
+					circle_x += (x_g/100);
+					momentum_x += 3*((circle_x - prev_circle_x));
+					if(momentum_x > 280){
+						momentum_x = 280;
+					}
+					//printf(" momentum: %d \r\n", momentum_x);	
+				} 
+				
+				else if (x_g < -125 && circle_x > 0 + r) {
+					circle_x -= -(x_g/100);
+					momentum_x -= -3*((circle_x - prev_circle_x));
+					if(momentum_x < -280){
+						momentum_x = -280;
+					}
+					//printf(" momentum: %d \r\n", momentum_x);	
 				}
-
+				else if(x_g > -125 && x_g < 125 && momentum_x != 0){
+					//printf(" momentum: %d \r\n", momentum_x);
+					if(momentum_x < 0)
+					{
+						if(momentum_x > -40){ // -1 
+							circle_x -= -1;
+							momentum_x += 3*-1;
+						}
+						else if( momentum_x > -80){
+							circle_x -= -2;
+							momentum_x += 3 * -2;
+						}
+						else if(momentum_x > -120){
+							circle_x -= -3;
+							momentum_x += 3*-3;
+						}
+						else if(momentum_x > -160){
+							circle_x -= -4;
+							momentum_x += 3*-4;
+						}
+						else if(momentum_x > -200){
+							circle_x -= -5;
+							momentum_x += 3*-5;
+						}
+						else if(momentum_x > -240){
+							circle_x -= -6;
+							momentum_x += 3*-6;
+						}
+						else if(momentum_x > -280){
+							circle_x -= -7;
+							momentum_x += 3*-7;
+							printf(" momentum: %d \r\n", momentum_x);
+						}
+						//printf(" momentum: %d \r\n", momentum_x);
+					}
+					else if(momentum_x > 0)
+					{
+						if(momentum_x < 40){ // -1 
+							circle_x += 1;
+							momentum_x -= 3*-1;
+						}
+						else if( momentum_x < 80){
+							circle_x += 2;
+							momentum_x -= 3 * -2;
+						}
+						else if(momentum_x < 120){
+							circle_x += 3;
+							momentum_x -= 3*-3;
+						}
+						else if(momentum_x < 160){
+							circle_x += 4;
+							momentum_x -= 3*-4;
+						}
+						else if(momentum_x < 200){
+							circle_x += 5;
+							momentum_x -= 3*-5;
+						}
+						else if(momentum_x < 240){
+							circle_x += 6;
+							momentum_x -= 3*-6;
+						}
+						else if(momentum_x < 280){
+							circle_x += 7;
+							momentum_x -= 3*-7;
+						}
+						//printf(" momentum: %d \r\n", momentum_x);
+					}
+						
+						
+					
+				}	
+				
 				if (y_g > 100 && circle_y > 0 + r) {
 					circle_y -= (y_g/100);
-				} else if (y_g < -100 && circle_y < 475 - r) {
+				} 
+				else if (y_g < -100 && circle_y < 475 - r) {
 					circle_y += -(y_g/100);
 				}
+				
+				
+				
+				
 
 				// Clear the previous circle position only
 				VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
 
 				// Draw the new box position
 				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
-
+				
+				//printf("prev x - new x:%d \r\n",(prev_circle_x - circle_x)); 
 				// Update the previous position for the next iteration
 				prev_circle_x = circle_x;
 				prev_circle_y = circle_y;
 
 				
 
-                usleep(50*1000);
+                usleep(50*1000); //sleep for 50 ms
             }
         }
     }
