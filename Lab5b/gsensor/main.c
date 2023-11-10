@@ -209,7 +209,8 @@ int main() {
 	//initial circle coordinates
 	int circle_x = 100;
 	int circle_y = 100;
-	int momentum_x = 0;
+	int velocity_x = 0;
+	int velocity_y = 0;
 	int prev_circle_x, prev_circle_y;
 	VGA_draw_circle(10,circle_x,circle_y, virtual_base); // Draw circle at center of screen
 	//float t = .25;
@@ -235,101 +236,53 @@ int main() {
 
 				if (x_g > 125 && circle_x < 635 - r) {
 					circle_x += (x_g/100);
-					momentum_x += 3*((circle_x - prev_circle_x));
-					if(momentum_x > 280){
-						momentum_x = 280;
-					}
-					//printf(" momentum: %d \r\n", momentum_x);	
+					velocity_x += (x_g/100);
 				} 
 				
 				else if (x_g < -125 && circle_x > 0 + r) {
 					circle_x -= -(x_g/100);
-					momentum_x -= -3*((circle_x - prev_circle_x));
-					if(momentum_x < -280){
-						momentum_x = -280;
-					}
-					//printf(" momentum: %d \r\n", momentum_x);	
+					velocity_x -= -(x_g/100);
 				}
-				else if(x_g > -125 && x_g < 125 && momentum_x != 0){
-					//printf(" momentum: %d \r\n", momentum_x);
-					if(momentum_x < 0)
+				
+				else if (x_g > -125 && x_g < 125 && circle_x < 635 -r && circle_x > 0 + r)
+				{
+					if(velocity_x > 1)
 					{
-						if(momentum_x > -40){ // -1 
-							circle_x -= -1;
-							momentum_x += 3*-1;
-						}
-						else if( momentum_x > -80){
-							circle_x -= -2;
-							momentum_x += 3 * -2;
-						}
-						else if(momentum_x > -120){
-							circle_x -= -3;
-							momentum_x += 3*-3;
-						}
-						else if(momentum_x > -160){
-							circle_x -= -4;
-							momentum_x += 3*-4;
-						}
-						else if(momentum_x > -200){
-							circle_x -= -5;
-							momentum_x += 3*-5;
-						}
-						else if(momentum_x > -240){
-							circle_x -= -6;
-							momentum_x += 3*-6;
-						}
-						else if(momentum_x > -280){
-							circle_x -= -7;
-							momentum_x += 3*-7;
-							printf(" momentum: %d \r\n", momentum_x);
-						}
-						//printf(" momentum: %d \r\n", momentum_x);
+						circle_x += 2;
+						velocity_x -= 3;
 					}
-					else if(momentum_x > 0)
+					else if(velocity_x < -1)
 					{
-						if(momentum_x < 40){ // -1 
-							circle_x += 1;
-							momentum_x -= 3*-1;
-						}
-						else if( momentum_x < 80){
-							circle_x += 2;
-							momentum_x -= 3 * -2;
-						}
-						else if(momentum_x < 120){
-							circle_x += 3;
-							momentum_x -= 3*-3;
-						}
-						else if(momentum_x < 160){
-							circle_x += 4;
-							momentum_x -= 3*-4;
-						}
-						else if(momentum_x < 200){
-							circle_x += 5;
-							momentum_x -= 3*-5;
-						}
-						else if(momentum_x < 240){
-							circle_x += 6;
-							momentum_x -= 3*-6;
-						}
-						else if(momentum_x < 280){
-							circle_x += 7;
-							momentum_x -= 3*-7;
-						}
-						//printf(" momentum: %d \r\n", momentum_x);
+						circle_x -= 2;
+						velocity_x += 3;
 					}
-						
-						
-					
-				}	
+					printf("velocity_x: %d\r\n",velocity_x);
+				}
+
 				
 				if (y_g > 100 && circle_y > 0 + r) {
 					circle_y -= (y_g/100);
+					velocity_y -= -(y_g/100);
 				} 
 				else if (y_g < -100 && circle_y < 475 - r) {
 					circle_y += -(y_g/100);
+					velocity_y += (y_g/100);
 				}
 				
-				
+				else if (y_g > -100 && y_g < 100 && circle_y > 0 +r && circle_y < 475 -r)
+				{
+					if(velocity_y > 1)
+					{
+						circle_y += 2;
+						velocity_y -= 3;
+					}
+					else if(velocity_y < -1)
+					{
+						circle_y -= 2;
+						velocity_y += 3;
+					}
+					printf("velocity_y: %d\r\n",velocity_y);
+				}
 				
 				
 
