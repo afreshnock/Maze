@@ -28,7 +28,7 @@ int tiles [768] = {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 
 void DrawTiles(void *virtual_base){
     int i=0; 
-    for(i=0;i<600;i++){
+    for(i=0;i<768;i++){
         int x = i % 32 * 20;
         int y = i / 32 * 20;
         if(tiles[i]==1){
