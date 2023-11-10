@@ -159,11 +159,11 @@ int main() {
 	//initial circle coordinates
 	int circle_x = 100;
 	int circle_y = 100;
+	int velocity_x = 0;
+	int velocity_y = 0;
 	int prev_circle_x, prev_circle_y;
 	VGA_draw_circle(10,circle_x,circle_y, virtual_base); // Draw circle at center of screen
-	float t = .25;
-	int v_x = 0;
-	int v_y = 0;
+
     DrawTiles(virtual_base);
 
     while(bSuccess && (max_cnt == 0 || cnt < max_cnt)){
@@ -174,46 +174,84 @@ int main() {
 				int r = 10; // radius of the circle
 				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
 				int y_g = (int16_t)szXYZ[1]*mg_per_digi;
-                printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
+                //printf("[%d]X=%d mg, Y=%d mg, Z=%d mg\r\n", cnt, x_g, y_g, (int16_t)szXYZ[2]*mg_per_digi);
 
 				
 				
-				
+				//printf(" circle x: %d \r\n", circle_x);
+
 				
 				//int move_amount = 5;	// movement speed
 
-				if (x_g > 100 && circle_x < 635 - r) {
-					v_x += t*(x_g/100);
-					circle_x += v_x * t;
-				} else if (x_g < -100 && circle_x > 0 + r) {
-					v_x -= t*(x_g/100);
-					circle_x -= v_x * t;
+				if (x_g > 125 && circle_x < 635 - r) {
+					circle_x += (x_g/100);
+					velocity_x += (x_g/100);
+				} 
+				
+				else if (x_g < -125 && circle_x > 0 + r) {
+					circle_x -= -(x_g/100);
+					velocity_x -= -(x_g/100);
+				}
+				
+				else if (x_g > -125 && x_g < 125 && circle_x < 635 -r && circle_x > 0 + r)
+				{
+					if(velocity_x > 1)
+					{
+						circle_x += 2;
+						velocity_x -= 3;
+					}
+					else if(velocity_x < -1)
+					{
+						circle_x -= 2;
+						velocity_x += 3;
+					}
+					printf("velocity_x: %d\r\n",velocity_x);
 				}
 
+				
 				if (y_g > 100 && circle_y > 0 + r) {
 					circle_y -= (y_g/100);
-				} else if (y_g < -100 && circle_y < 475 - r) {
+					velocity_y -= -(y_g/100);
+				} 
+				else if (y_g < -100 && circle_y < 475 - r) {
 					circle_y += -(y_g/100);
+					velocity_y += (y_g/100);
 				}
+				
+				else if (y_g > -100 && y_g < 100 && circle_y > 0 +r && circle_y < 475 -r)
+				{
+					if(velocity_y > 1)
+					{
+						circle_y += 2;
+						velocity_y -= 3;
+					}
+					else if(velocity_y < -1)
+					{
+						circle_y -= 2;
+						velocity_y += 3;
+					}
+					printf("velocity_y: %d\r\n",velocity_y);
+				}
+				
+				
 
 				// Clear the previous circle position only
 				VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
 
 				// Draw the new box position
 				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
-
+				
+				//printf("prev x - new x:%d \r\n",(prev_circle_x - circle_x)); 
 				// Update the previous position for the next iteration
 				prev_circle_x = circle_x;
 				prev_circle_y = circle_y;
 
 				
 
-                usleep(50*1000);
+                usleep(50*1000); //sleep for 50 ms
             }
         }
     }
-
-
 
     if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
         printf("ERROR: munmap() failed...\n");
