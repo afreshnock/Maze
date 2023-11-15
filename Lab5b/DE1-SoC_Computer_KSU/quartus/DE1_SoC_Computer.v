@@ -271,6 +271,7 @@ output		[ 7: 0]	VGA_R;
 output					VGA_SYNC_N;
 output					VGA_VS;
 
+//COUNTER
 
 
 ////////////////////////////////////
@@ -367,10 +368,21 @@ wire			[15: 0]	hex3_hex0;
 assign HEX4 = 7'b1111111;
 assign HEX5 = 7'b1111111;
 
-HexDigit Digit0(HEX0, hex3_hex0[3:0]);
-HexDigit Digit1(HEX1, hex3_hex0[7:4]);
-HexDigit Digit2(HEX2, hex3_hex0[11:8]);
-HexDigit Digit3(HEX3, hex3_hex0[15:12]);
+HexDigit Digit0(HEX0, c[3:0]);
+HexDigit Digit1(HEX1, c[7:4]);
+HexDigit Digit2(HEX2, c[11:8]);
+HexDigit Digit3(HEX3, c[15:12]);
+
+reg [15:0] c;
+
+always @ (posedge CLOCK_50 or negedge ar)
+begin
+	if(~ar)
+		c = 0;
+	else 
+		c = c + 1;
+end
+
 
 //=======================================================
 //  Structural coding
