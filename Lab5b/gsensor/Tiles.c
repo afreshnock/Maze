@@ -45,3 +45,8 @@ void DrawTiles(void *virtual_base){
         }
     }
 }
+
+void TileCollision(int *x, int *y)
+{
+    
+}
