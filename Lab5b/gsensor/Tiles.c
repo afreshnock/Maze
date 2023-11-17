@@ -2,8 +2,8 @@
 
 #define TILE_HEIGHT 20
 #define TILE_WIDTH 20
-#define MAP_HEIGHT 32
-#define MAP_WIDTH 24
+#define MAP_HEIGHT 24
+#define MAP_WIDTH 32
 
 
 int tiles [768] = {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
@@ -54,10 +54,9 @@ void DrawTiles(void *virtual_base){
     }
 }
 
-void TileCollision(int *Player_x, int *Player_y)
+void TileCollision(int *Player_x, int *Player_y, void *virtual_base)
 {
-    int playerIndex = Player_y / TILE_HEIGHT * MAP_WIDTH) + (Player_x / TILE_WIDTH);
-            //int playerindex = _tilemap.TileIndices[index] - 1;
+    int playerIndex = (*Player_y / TILE_HEIGHT * MAP_WIDTH) + (*Player_x / TILE_WIDTH);
             tileIndexArray[0] = playerIndex - 1 - MAP_WIDTH;
             tileIndexArray[1] = playerIndex - MAP_WIDTH;
             tileIndexArray[2] = playerIndex - MAP_WIDTH + 1;
@@ -88,20 +87,28 @@ void TileCollision(int *Player_x, int *Player_y)
                         switch(i)
                         {
                             case 1: // top tile
-                                if(*Player_y <= ( (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT){
-                                    *Player_y = (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT;
+                                if(*Player_y -10 <= ( (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT){
+                                    *Player_y = ((tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT + 10;
                                 }
-
-                            break;
+                                break;
                             case 3: //left tile
-                            break;
+                                if(*Player_x -10 <= ( (tileIndexArray[i] % MAP_WIDTH) + 1 ) * TILE_HEIGHT){
+                                    *Player_x = ((tileIndexArray[i] % MAP_WIDTH) + 1 ) * TILE_HEIGHT + 10;
+                                }  
+                                break;
                             case 5: // right tile
-                            break;
-                            case 7: 
-                            break;
+                                if(*Player_x +12 >= ( (tileIndexArray[i] % MAP_WIDTH)) * TILE_HEIGHT){
+                                    *Player_x = ((tileIndexArray[i] % MAP_WIDTH)) * TILE_HEIGHT - 12;
+                                } 
+                                break;
+                            case 7: // bottom tile
+                                if(*Player_y +11 >= ( (tileIndexArray[i] / MAP_WIDTH)) * TILE_HEIGHT){
+                                    *Player_y = ((tileIndexArray[i] / MAP_WIDTH)) * TILE_HEIGHT - 11;
+                                } 
+                                break;
                             default:
                             //do nothing
-                            break
+                            break;
                         }
                         break;
                         case 3: // 3 is win tile
@@ -111,7 +118,7 @@ void TileCollision(int *Player_x, int *Player_y)
                         break;
                         default:
                         // jump scare
-                        break
+                        break;
                     }
                 }
             }

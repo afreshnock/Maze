@@ -238,6 +238,9 @@ int main() {
 				// Clear the previous circle position only
 				VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
 
+				// Collision Check
+				TileCollision(&circle_x, &circle_y, virtual_base);
+
 				// Draw the new box position
 				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
 				
