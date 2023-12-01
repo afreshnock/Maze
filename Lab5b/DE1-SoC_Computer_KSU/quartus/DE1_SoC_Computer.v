@@ -368,19 +368,54 @@ wire			[15: 0]	hex3_hex0;
 assign HEX4 = 7'b1111111;
 assign HEX5 = 7'b1111111;
 
-HexDigit Digit0(HEX0, c[3:0]);
-HexDigit Digit1(HEX1, c[7:4]);
-HexDigit Digit2(HEX2, c[11:8]);
-HexDigit Digit3(HEX3, c[15:12]);
+HexDigit Digit0(HEX0, Hz[3:0]);
+HexDigit Digit1(HEX1, Hz[7:4]);
+HexDigit Digit2(HEX2, Hz[11:8]);
+HexDigit Digit3(HEX3, Hz[15:12]);
 
-reg [15:0] c;
+reg [26:0] c;
+reg [15:0] Hz;
 
 always @ (posedge CLOCK_50 or negedge ar)
 begin
-	if(~ar)
+	if(~ar) 
+	 begin
 		c = 0;
+		Hz = 0;
+	 end
+	else if(~SW[0])
+	 begin
+	 c = c;
+	 Hz = Hz;
+	 end
 	else 
-		c = c + 1;
+	 begin
+		if(c < 49999999)
+		 begin
+		  c = c + 1;
+		 end
+		else 
+		 begin
+		  c = 0;
+		  Hz = Hz + 1;
+		  if(Hz[0] > 9 )
+		   begin
+		    Hz[0] = 0;
+		    Hz[1] = Hz[1] + 1;
+		   end
+		  else if(Hz[1] > 6 )
+		   begin
+		    Hz[1] = 0;
+		    Hz[2] = Hz[2] + 1;
+		   end
+		  else if(Hz[2] > 9 )
+		   begin
+		    Hz[2] = 0;
+		    Hz[3] = Hz[3] + 1;
+		   end
+		  
+		 end
+	 end
 end
 
 
