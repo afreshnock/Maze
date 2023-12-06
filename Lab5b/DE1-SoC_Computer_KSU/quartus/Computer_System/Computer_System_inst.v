@@ -1,6 +1,9 @@
 	Computer_System u0 (
+		.adc_left_dat_export             (<connected-to-adc_left_dat_export>),             //         adc_left_dat.export
 		.av_config_SDAT                  (<connected-to-av_config_SDAT>),                  //            av_config.SDAT
 		.av_config_SCLK                  (<connected-to-av_config_SCLK>),                  //                     .SCLK
+		.ctrl_export                     (<connected-to-ctrl_export>),                     //                 ctrl.export
+		.dac_left_dat_export             (<connected-to-dac_left_dat_export>),             //         dac_left_dat.export
 		.hex3_hex0_export                (<connected-to-hex3_hex0_export>),                //            hex3_hex0.export
 		.hps_io_hps_io_emac1_inst_TX_CLK (<connected-to-hps_io_hps_io_emac1_inst_TX_CLK>), //               hps_io.hps_io_emac1_inst_TX_CLK
 		.hps_io_hps_io_emac1_inst_TXD0   (<connected-to-hps_io_hps_io_emac1_inst_TXD0>),   //                     .hps_io_emac1_inst_TXD0
@@ -87,6 +90,7 @@
 		.sdram_we_n                      (<connected-to-sdram_we_n>),                      //                     .we_n
 		.sdram_clk_clk                   (<connected-to-sdram_clk_clk>),                   //            sdram_clk.clk
 		.slider_switches_export          (<connected-to-slider_switches_export>),          //      slider_switches.export
+		.space_export                    (<connected-to-space_export>),                    //                space.export
 		.system_pll_ref_clk_clk          (<connected-to-system_pll_ref_clk_clk>),          //   system_pll_ref_clk.clk
 		.system_pll_ref_reset_reset      (<connected-to-system_pll_ref_reset_reset>),      // system_pll_ref_reset.reset
 		.vga_CLK                         (<connected-to-vga_CLK>),                         //                  vga.CLK
@@ -98,10 +102,6 @@
 		.vga_G                           (<connected-to-vga_G>),                           //                     .G
 		.vga_B                           (<connected-to-vga_B>),                           //                     .B
 		.vga_pll_ref_clk_clk             (<connected-to-vga_pll_ref_clk_clk>),             //      vga_pll_ref_clk.clk
-		.vga_pll_ref_reset_reset         (<connected-to-vga_pll_ref_reset_reset>),         //    vga_pll_ref_reset.reset
-		.ctrl_export                     (<connected-to-ctrl_export>),                     //                 ctrl.export
-		.space_export                    (<connected-to-space_export>),                    //                space.export
-		.dac_left_dat_export             (<connected-to-dac_left_dat_export>),             //         dac_left_dat.export
-		.adc_left_dat_export             (<connected-to-adc_left_dat_export>)              //         adc_left_dat.export
+		.vga_pll_ref_reset_reset         (<connected-to-vga_pll_ref_reset_reset>)          //    vga_pll_ref_reset.reset
 	);
 

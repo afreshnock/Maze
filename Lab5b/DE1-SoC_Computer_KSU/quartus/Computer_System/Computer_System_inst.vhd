@@ -1,7 +1,10 @@
 	component Computer_System is
 		port (
+			adc_left_dat_export             : in    std_logic_vector(31 downto 0) := (others => 'X'); -- export
 			av_config_SDAT                  : inout std_logic                     := 'X';             -- SDAT
 			av_config_SCLK                  : out   std_logic;                                        -- SCLK
+			ctrl_export                     : out   std_logic_vector(7 downto 0);                     -- export
+			dac_left_dat_export             : out   std_logic_vector(31 downto 0);                    -- export
 			hex3_hex0_export                : out   std_logic_vector(15 downto 0);                    -- export
 			hps_io_hps_io_emac1_inst_TX_CLK : out   std_logic;                                        -- hps_io_emac1_inst_TX_CLK
 			hps_io_hps_io_emac1_inst_TXD0   : out   std_logic;                                        -- hps_io_emac1_inst_TXD0
@@ -88,6 +91,7 @@
 			sdram_we_n                      : out   std_logic;                                        -- we_n
 			sdram_clk_clk                   : out   std_logic;                                        -- clk
 			slider_switches_export          : in    std_logic_vector(9 downto 0)  := (others => 'X'); -- export
+			space_export                    : in    std_logic_vector(15 downto 0) := (others => 'X'); -- export
 			system_pll_ref_clk_clk          : in    std_logic                     := 'X';             -- clk
 			system_pll_ref_reset_reset      : in    std_logic                     := 'X';             -- reset
 			vga_CLK                         : out   std_logic;                                        -- CLK
@@ -99,18 +103,17 @@
 			vga_G                           : out   std_logic_vector(7 downto 0);                     -- G
 			vga_B                           : out   std_logic_vector(7 downto 0);                     -- B
 			vga_pll_ref_clk_clk             : in    std_logic                     := 'X';             -- clk
-			vga_pll_ref_reset_reset         : in    std_logic                     := 'X';             -- reset
-			ctrl_export                     : out   std_logic_vector(7 downto 0);                     -- export
-			space_export                    : in    std_logic_vector(15 downto 0) := (others => 'X'); -- export
-			dac_left_dat_export             : out   std_logic_vector(31 downto 0);                    -- export
-			adc_left_dat_export             : in    std_logic_vector(31 downto 0) := (others => 'X')  -- export
+			vga_pll_ref_reset_reset         : in    std_logic                     := 'X'              -- reset
 		);
 	end component Computer_System;
 
 	u0 : component Computer_System
 		port map (
+			adc_left_dat_export             => CONNECTED_TO_adc_left_dat_export,             --         adc_left_dat.export
 			av_config_SDAT                  => CONNECTED_TO_av_config_SDAT,                  --            av_config.SDAT
 			av_config_SCLK                  => CONNECTED_TO_av_config_SCLK,                  --                     .SCLK
+			ctrl_export                     => CONNECTED_TO_ctrl_export,                     --                 ctrl.export
+			dac_left_dat_export             => CONNECTED_TO_dac_left_dat_export,             --         dac_left_dat.export
 			hex3_hex0_export                => CONNECTED_TO_hex3_hex0_export,                --            hex3_hex0.export
 			hps_io_hps_io_emac1_inst_TX_CLK => CONNECTED_TO_hps_io_hps_io_emac1_inst_TX_CLK, --               hps_io.hps_io_emac1_inst_TX_CLK
 			hps_io_hps_io_emac1_inst_TXD0   => CONNECTED_TO_hps_io_hps_io_emac1_inst_TXD0,   --                     .hps_io_emac1_inst_TXD0
@@ -197,6 +200,7 @@
 			sdram_we_n                      => CONNECTED_TO_sdram_we_n,                      --                     .we_n
 			sdram_clk_clk                   => CONNECTED_TO_sdram_clk_clk,                   --            sdram_clk.clk
 			slider_switches_export          => CONNECTED_TO_slider_switches_export,          --      slider_switches.export
+			space_export                    => CONNECTED_TO_space_export,                    --                space.export
 			system_pll_ref_clk_clk          => CONNECTED_TO_system_pll_ref_clk_clk,          --   system_pll_ref_clk.clk
 			system_pll_ref_reset_reset      => CONNECTED_TO_system_pll_ref_reset_reset,      -- system_pll_ref_reset.reset
 			vga_CLK                         => CONNECTED_TO_vga_CLK,                         --                  vga.CLK
@@ -208,10 +212,6 @@
 			vga_G                           => CONNECTED_TO_vga_G,                           --                     .G
 			vga_B                           => CONNECTED_TO_vga_B,                           --                     .B
 			vga_pll_ref_clk_clk             => CONNECTED_TO_vga_pll_ref_clk_clk,             --      vga_pll_ref_clk.clk
-			vga_pll_ref_reset_reset         => CONNECTED_TO_vga_pll_ref_reset_reset,         --    vga_pll_ref_reset.reset
-			ctrl_export                     => CONNECTED_TO_ctrl_export,                     --                 ctrl.export
-			space_export                    => CONNECTED_TO_space_export,                    --                space.export
-			dac_left_dat_export             => CONNECTED_TO_dac_left_dat_export,             --         dac_left_dat.export
-			adc_left_dat_export             => CONNECTED_TO_adc_left_dat_export              --         adc_left_dat.export
+			vga_pll_ref_reset_reset         => CONNECTED_TO_vga_pll_ref_reset_reset          --    vga_pll_ref_reset.reset
 		);
 

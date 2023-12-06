@@ -1,7 +1,10 @@
 
 module Computer_System (
+	adc_left_dat_export,
 	av_config_SDAT,
 	av_config_SCLK,
+	ctrl_export,
+	dac_left_dat_export,
 	hex3_hex0_export,
 	hps_io_hps_io_emac1_inst_TX_CLK,
 	hps_io_hps_io_emac1_inst_TXD0,
@@ -88,6 +91,7 @@ module Computer_System (
 	sdram_we_n,
 	sdram_clk_clk,
 	slider_switches_export,
+	space_export,
 	system_pll_ref_clk_clk,
 	system_pll_ref_reset_reset,
 	vga_CLK,
@@ -99,14 +103,13 @@ module Computer_System (
 	vga_G,
 	vga_B,
 	vga_pll_ref_clk_clk,
-	vga_pll_ref_reset_reset,
-	ctrl_export,
-	space_export,
-	dac_left_dat_export,
-	adc_left_dat_export);	
+	vga_pll_ref_reset_reset);	
 
+	input	[31:0]	adc_left_dat_export;
 	inout		av_config_SDAT;
 	output		av_config_SCLK;
+	output	[7:0]	ctrl_export;
+	output	[31:0]	dac_left_dat_export;
 	output	[15:0]	hex3_hex0_export;
 	output		hps_io_hps_io_emac1_inst_TX_CLK;
 	output		hps_io_hps_io_emac1_inst_TXD0;
@@ -193,6 +196,7 @@ module Computer_System (
 	output		sdram_we_n;
 	output		sdram_clk_clk;
 	input	[9:0]	slider_switches_export;
+	input	[15:0]	space_export;
 	input		system_pll_ref_clk_clk;
 	input		system_pll_ref_reset_reset;
 	output		vga_CLK;
@@ -205,8 +209,4 @@ module Computer_System (
 	output	[7:0]	vga_B;
 	input		vga_pll_ref_clk_clk;
 	input		vga_pll_ref_reset_reset;
-	output	[7:0]	ctrl_export;
-	input	[15:0]	space_export;
-	output	[31:0]	dac_left_dat_export;
-	input	[31:0]	adc_left_dat_export;
 endmodule

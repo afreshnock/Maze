@@ -1,4 +1,4 @@
-// (C) 2001-2018 Intel Corporation. All rights reserved.
+// (C) 2001-2017 Intel Corporation. All rights reserved.
 // Your use of Intel Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files from any of the foregoing (including device programming or simulation 
@@ -151,10 +151,12 @@ assign output_empty				= 2'h0;
 assign output_valid				= valid;
 
 // Internal Assignments
-assign sync_foreground = foreground_valid & background_valid &
-			background_startofpacket & ~foreground_startofpacket;
-assign sync_background = foreground_valid & background_valid &
-			foreground_startofpacket & ~background_startofpacket;
+assign sync_foreground = (foreground_valid & background_valid &
+			((background_startofpacket & ~foreground_startofpacket) |
+			(background_endofpacket & ~foreground_endofpacket)));
+assign sync_background = (foreground_valid & background_valid &
+			((foreground_startofpacket & ~background_startofpacket) |
+			(foreground_endofpacket & ~background_endofpacket)));
 
 assign valid =	foreground_valid & background_valid & 
 				~sync_foreground & ~sync_background;

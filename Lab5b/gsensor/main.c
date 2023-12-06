@@ -16,6 +16,7 @@
 #include "ADXL345.h"
 #include "VGA.h"
 #include "Tiles.h"
+#include "ARM_A9_HPS.h"
 
 #define HW_REGS_BASE (0xFC000000)
 #define HW_OCRAM_BASE (0xC8000000)
@@ -79,6 +80,7 @@ bool ADXL345_REG_MULTI_READ(int file, uint8_t readaddr,uint8_t readdata[], uint8
 
 int main() {
 	void *virtual_base;
+	void *push_button_base;
 	int fd;
 
 	if ((fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
@@ -92,6 +94,8 @@ int main() {
         close(fd);
         return(1);
     }
+	
+	
 
 	// Set framebuffer addr to beginning of the SRAM
     PHYSMEM_32(0xff203024) = 0xc8000000; // Pixel BackBuffer register

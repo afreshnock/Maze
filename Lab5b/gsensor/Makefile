@@ -11,7 +11,7 @@ ARCH= arm
 
 build: $(TARGET)
 
-gsensor: main.o ADXL345.o VGA.o Tiles.o
+gsensor: main.o ADXL345.o VGA.o Tiles.o ARM_A9_HPS.o
 	$(CC) $(LDFLAGS)   $^ -o $@ 
 
 %.o : %.c
