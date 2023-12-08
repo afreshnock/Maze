@@ -54,7 +54,7 @@ void DrawTiles(void *virtual_base){
     }
 }
 
-void TileCollision(int *Player_x, int *Player_y, void *virtual_base)
+int TileCollision(int *Player_x, int *Player_y, void *virtual_base)
 {
     int playerIndex = (*Player_y / TILE_HEIGHT * MAP_WIDTH) + (*Player_x / TILE_WIDTH);
             tileIndexArray[0] = playerIndex - 1 - MAP_WIDTH;
@@ -126,7 +126,7 @@ void TileCollision(int *Player_x, int *Player_y, void *virtual_base)
                         break;
                         case 3: // 3 is win tile
                         if(i == 4){
-                            //todo win game
+                            return 0x3FF;
                         }
                         break;
                         default:
@@ -135,7 +135,7 @@ void TileCollision(int *Player_x, int *Player_y, void *virtual_base)
                     }
                 }
             }
-               
+         return 0;
 
 
 

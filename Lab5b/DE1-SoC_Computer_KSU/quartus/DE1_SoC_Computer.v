@@ -383,7 +383,7 @@ begin
 		c = 0;
 		Hz = 0;
 	 end
-	else if(~SW[0])
+	else if(~SW[0] || LEDR[0])
 	 begin
 	 c = c;
 	 Hz = Hz;

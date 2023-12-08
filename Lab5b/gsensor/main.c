@@ -20,9 +20,13 @@
 
 #define HW_REGS_BASE (0xFC000000)
 #define HW_OCRAM_BASE (0xC8000000)
+#define BUTTON_BASE (0xFF200050)
 #define HW_REGS_SPAN (0x04000000)
 #define HW_REGS_MASK (HW_REGS_SPAN - 1)
 #define FPGA_CHAR_BASE      0xC9000000
+#define PHYSMEM_BUTTON_32(addr) (*((unsigned int *)(push_button_base + (addr & HW_REGS_MASK))))
+#define PHYSMEM_BUTTON_16(addr) (*((unsigned short *)(push_button_base + (addr & HW_REGS_MASK))))
+
 
 #define PHYSMEM_32(addr) (*((unsigned int *)(virtual_base + (addr & HW_REGS_MASK))))
 #define PHYSMEM_16(addr) (*((unsigned short *)(virtual_base + (addr & HW_REGS_MASK))))
@@ -82,25 +86,41 @@ int main() {
 	void *virtual_base;
 	void *push_button_base;
 	int fd;
+	int button_reg;
+	int slider_reg;
+	//int test_16;
 
 	if ((fd = open("/dev/mem", (O_RDWR | O_SYNC))) == -1) {
         printf("ERROR: could not open \"/dev/mem\"...\n");
         return(1);
     }
 
+	push_button_base = mmap(NULL, HW_REGS_SPAN, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, HW_REGS_BASE);
+    if (push_button_base == MAP_FAILED) {
+        printf("ERROR: mmap() failed...\n");
+        close(fd);
+        return(1);
+    }
+	/* while(1){
+	
+	slider_reg = PHYSMEM_BUTTON_32(0xff200040);
+	
+	//test_16 = physmem_button_16(0xff200050);
+	printf("32 bit: %d \r\n",slider_reg);
+	//printf("16 bit: %d \r\n",test_16);
+	
+	} */
+	
 	virtual_base = mmap(NULL, HW_REGS_SPAN, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, HW_REGS_BASE);
     if (virtual_base == MAP_FAILED) {
         printf("ERROR: mmap() failed...\n");
         close(fd);
         return(1);
     }
-	
-	
 
 	// Set framebuffer addr to beginning of the SRAM
     PHYSMEM_32(0xff203024) = 0xc8000000; // Pixel BackBuffer register
     PHYSMEM_32(0xff203020) = 0xc8000000; // Pixel Buffer register
-
 	if (munmap(virtual_base, HW_REGS_SPAN) != 0) {
         printf("ERROR: munmap() failed...\n");
         close(fd);
@@ -166,6 +186,7 @@ int main() {
 	int velocity_x = 0;
 	int velocity_y = 0;
 	int prev_circle_x, prev_circle_y;
+	int ledandclockcontrol = 0;
 	VGA_draw_circle(10,circle_x,circle_y, virtual_base); // Draw circle at center of screen
 
     DrawTiles(virtual_base);
@@ -173,7 +194,19 @@ int main() {
     while(bSuccess && (max_cnt == 0 || cnt < max_cnt)){
         if (ADXL345_IsDataReady(file)){
             bSuccess = ADXL345_XYZ_Read(file, szXYZ);
-            if (bSuccess){
+			slider_reg = PHYSMEM_BUTTON_32(0xFF200040);
+			button_reg = PHYSMEM_BUTTON_32(0xFF200050);
+				if((button_reg & 0x1) == 1){
+					circle_x = 100;
+					circle_y = 100;
+					prev_circle_x = circle_x;
+					prev_circle_y = circle_y;
+					velocity_x = 0;
+					velocity_y = 0;
+					ledandclockcontrol = 0;
+					DrawTiles(virtual_base);
+				}
+            if (bSuccess && ((slider_reg & 0x1) == 1) && ledandclockcontrol == 0 ){
 				cnt++;
 				int r = 10; // radius of the circle
 				int x_g = (int16_t)szXYZ[0]*mg_per_digi;
@@ -243,7 +276,17 @@ int main() {
 				VGA_clear_circle(r,prev_circle_x, prev_circle_y,virtual_base);
 
 				// Collision Check
-				TileCollision(&circle_x, &circle_y, virtual_base);
+				ledandclockcontrol=TileCollision(&circle_x, &circle_y, virtual_base);
+				
+				PHYSMEM_BUTTON_32(0xFF200000) = ledandclockcontrol;
+				
+				
+				
+				
+				
+				
+
+
 
 				// Draw the new box position
 				VGA_draw_circle(r,circle_x,circle_y,virtual_base);
@@ -256,6 +299,10 @@ int main() {
 				
 
                 usleep(50*1000); //sleep for 50 ms
+				
+				
+				
+				
             }
         }
     }
