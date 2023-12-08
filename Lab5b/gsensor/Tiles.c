@@ -86,19 +86,7 @@ int TileCollision(int *Player_x, int *Player_y, void *virtual_base)
                         case 2: // 2 is wall tile
                         switch(i)
                         {
-                            case 0: // top left tile
-                                if(*Player_y -10 <= ( (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT){ // top
-                                    if(*Player_x -8 <= ( (tileIndexArray[i] % MAP_WIDTH) + 1 ) * TILE_HEIGHT){ //left
-                                        *Player_y = ((tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT + 10;
-                                    }
-                                
-                                }else if(*Player_x -10 <= ( (tileIndexArray[i] % MAP_WIDTH) + 1 ) * TILE_HEIGHT){
-                                    if(*Player_y -8 <= ( (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT){
-                                         *Player_x = ((tileIndexArray[i] % MAP_WIDTH) + 1 ) * TILE_HEIGHT + 10;
-                                    }
-                                    
-                                }
-                                break;
+                            
                             case 1: // top tile
                                 if(*Player_y -10 <= ( (tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT){
                                     *Player_y = ((tileIndexArray[i] / MAP_WIDTH) + 1 ) * TILE_HEIGHT + 10;
