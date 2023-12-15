@@ -397,23 +397,7 @@ begin
 		else 
 		 begin
 		  c = 0;
-		  Hz = Hz + 1;
-		  if(Hz[0] > 9 )
-		   begin
-		    Hz[0] = 0;
-		    Hz[1] = Hz[1] + 1;
-		   end
-		  else if(Hz[1] > 6 )
-		   begin
-		    Hz[1] = 0;
-		    Hz[2] = Hz[2] + 1;
-		   end
-		  else if(Hz[2] > 9 )
-		   begin
-		    Hz[2] = 0;
-		    Hz[3] = Hz[3] + 1;
-		   end
-		  
+		  Hz = Hz + 1;		  
 		 end
 	 end
 end
